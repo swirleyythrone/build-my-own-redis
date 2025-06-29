@@ -1,11 +1,11 @@
 package main
 
-import {
+import (
 	"fmt"
 	"io"
 	"net"
 	"os"
-}
+)
 
 func main(){
 	fmt.Println("Listening on port :6379")
@@ -25,6 +25,23 @@ func main(){
 	}
 	defer conn.Close()
 	//Receive commands and respond
-	buf := make([]byte, 1024)// allocates a byte slice buffer to store the raw data read from the client over the TCP connection
+    for{
+	   buf := make([]byte, 1024)// allocates a byte slice buffer to store the raw data read from the client over the TCP 
+	   
+	   //read message from the client
+	   _,err = conn.Read(buf)
+       
+	   if err!=nil{
+	   	if err == io.EOF {
+               break // when the user inputs nothing break 
+	   	}
+	   	fmt.Println("Error reading from client: ",err.Error())
+	   	os.Exit(1)
+   
+	   }
+   
+	   // ignore request and send back PONG
+	   conn.Write([]byte("+OK\r\n"))
+    }
 }
 
