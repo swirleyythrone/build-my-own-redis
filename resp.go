@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
-	"strings"
 )
 
 //constants representing each type
@@ -104,5 +102,46 @@ func (r *Resp) Read() (Value, error) {
 func (r *Resp) readArray() (Value, error){
 	v := Value{}
 	v.typ = "array"
+	
+	length,_,err := r.readInteger()
+
+	if err != nil {
+		return v, err
+	}
+
+	// foreach line, parse and read the value
+
+	v.array = make([]Value, length)
+	for i := 0; i<length; i++{
+		val, err := r.Read()
+		if err != nil{
+			return v, err
+		}
+		// add parsed value to array
+		v.array[i] = val
+	}
+	return v, nil
+}
+
+
+func (r *Resp) readBulk() (Value, error){
+	v := Value{}
+	v.typ = "bulk"
+
+	len, _, err := r.readInteger()
+	if err != nil{
+		return v, err
+	}
+
+	bulk := make([]byte,len)
+
+	r.reader.Read(bulk)
+
+	v.bulk = string(bulk)
+	//Read the trailing CRLF
+
+	r.readLine()
+
+	return v, nil
 	
 }
